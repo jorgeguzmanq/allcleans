@@ -19,6 +19,7 @@ function ProductionContent() {
   const [unit, setUnit] = useState<string>('ml')
   const [currentProduction, setCurrentProduction] = useState<ProductionBatch | null>(null)
   const [showSaved, setShowSaved] = useState(false)
+  const [suggestedPrice, setSuggestedPrice] = useState<number>(0)
 
   const selectedRecipe = useMemo(() => 
     recipes.find(r => r.id === selectedRecipeId),
@@ -46,6 +47,8 @@ function ProductionContent() {
     if (production) {
       setCurrentProduction(production)
       setShowSaved(false)
+      const costs = production.costs.reduce((sum, c) => sum + (c.cost || 0), 0)
+      setSuggestedPrice(costs * 1.32)
     }
   }
 
@@ -277,6 +280,84 @@ function ProductionContent() {
                   )}
                 </table>
               </div>
+
+              {totalCost > 0 && (() => {
+                    const litersProduced = currentProduction!.unit === 'L' 
+                      ? currentProduction!.targetAmount 
+                      : currentProduction!.targetAmount / 1000
+                    const mlProduced = currentProduction!.unit === 'L' 
+                      ? currentProduction!.targetAmount * 1000 
+                      : currentProduction!.targetAmount
+                    const fmt = (n: number) => new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
+                    const fmtC = (n: number) => new Intl.NumberFormat('es-CO', { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(n)
+                    return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border rounded-lg p-4">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-lg">Costos</h4>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Costo total</span>
+                      <span className="font-medium">${fmt(totalCost)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Costo por litro</span>
+                      <span className="font-medium">${fmt(totalCost / litersProduced)}/L</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Costo por ml</span>
+                      <span className="font-medium">${fmtC(totalCost / mlProduced)}/ml</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground">Unidades producidas</span>
+                      <span className="font-medium">{currentProduction!.targetAmount.toLocaleString('es-CO')} {currentProduction!.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-lg">Beneficio</h4>
+                    <div className="space-y-2">
+                      <label className="text-sm text-muted-foreground">
+                        Precio sugerido
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min={totalCost * 0.5}
+                          max={totalCost * 3}
+                          step={0.01}
+                          value={suggestedPrice}
+                          onChange={(e) => setSuggestedPrice(Number(e.target.value))}
+                          className="flex-1 accent-primary"
+                        />
+                        <span className="font-medium text-lg min-w-[100px] text-right">
+                          ${fmt(suggestedPrice)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Beneficio</span>
+                      <span className={`font-medium ${suggestedPrice >= totalCost ? 'text-green-600' : 'text-red-600'}`}>
+                        ${fmt(suggestedPrice - totalCost)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Margen</span>
+                      <span className={`font-medium ${suggestedPrice >= totalCost ? 'text-green-600' : 'text-red-600'}`}>
+                        {suggestedPrice > 0 ? ((suggestedPrice - totalCost) / suggestedPrice * 100).toFixed(1) : 0}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Beneficio por litro</span>
+                      <span className={`font-medium ${suggestedPrice >= totalCost ? 'text-green-600' : 'text-red-600'}`}>
+                        ${fmt((suggestedPrice - totalCost) / litersProduced)}/L
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground">Precio por {currentProduction!.unit}</span>
+                      <span className="font-medium">${currentProduction!.unit === 'L' ? fmt(suggestedPrice / litersProduced) : fmtC(suggestedPrice / mlProduced)}/{currentProduction!.unit}</span>
+                    </div>
+                  </div>
+                </div>
+                )})()}
 
               <div className="border rounded-lg p-4">
                 <h4 className="font-semibold mb-4">Pasos de Producción</h4>
