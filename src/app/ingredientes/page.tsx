@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useStore, Ingredient, Price } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { ImageWithFallback, getImageSrc, getImageAlt } from '@/components/ui/image-with-fallback'
 
 const categoryLabels: Record<string, string> = {
   base: 'Base',
@@ -198,6 +199,7 @@ export default function IngredientsPage() {
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
+                  <th className="text-left p-3 w-16">Img</th>
                   <th className="text-left p-3">ID</th>
                   <th className="text-left p-3">Nombre</th>
                   <th className="text-left p-3">Categoría</th>
@@ -216,6 +218,13 @@ export default function IngredientsPage() {
                       setIsEditing(false)
                     }}
                   >
+                    <td className="p-3">
+                      <ImageWithFallback
+                        src={getImageSrc('ingredient', ing.id)}
+                        alt={getImageAlt('ingredient', ing.id)}
+                        size="thumbnail"
+                      />
+                    </td>
                     <td className="p-3 font-mono text-sm">{ing.id}</td>
                     <td className="p-3 font-medium">{ing.name}</td>
                     <td className="p-3 text-sm">{categoryLabels[ing.category] || ing.category}</td>
@@ -486,11 +495,17 @@ export default function IngredientsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold">{selectedIngredient.name}</h3>
                       <p className="text-sm text-muted-foreground">{selectedIngredient.id}</p>
                     </div>
+                    <ImageWithFallback
+                      src={getImageSrc('ingredient', selectedIngredient.id)}
+                      alt={getImageAlt('ingredient', selectedIngredient.id)}
+                      size="medium"
+                      className="flex-shrink-0"
+                    />
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => {
                         setEditForm({ ...selectedIngredient })

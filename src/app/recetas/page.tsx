@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useStore, Recipe } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { ImageWithFallback, getImageSrc, getImageAlt } from '@/components/ui/image-with-fallback'
 import Link from 'next/link'
 
 const categoryLabels: Record<string, string> = {
@@ -60,9 +61,17 @@ export default function RecipesPage() {
               className={`p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors ${selectedRecipe?.id === recipe.id ? 'bg-accent border-primary' : ''}`}
               onClick={() => setSelectedRecipe(recipe)}
             >
-              <h4 className="font-medium">{recipe.name}</h4>
+              <div className="flex gap-3">
+                <ImageWithFallback
+                  src={getImageSrc('recipe', recipe.id)}
+                  alt={getImageAlt('recipe', recipe.id)}
+                  size="small"
+                  className="flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium truncate">{recipe.name}</h4>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{recipe.description}</p>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 flex-wrap">
                 <span className="text-xs px-2 py-0.5 bg-secondary rounded">
                   {recipe.base_volume_ml}ml
                 </span>
@@ -72,6 +81,8 @@ export default function RecipesPage() {
                   </span>
                 )}
               </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -80,8 +91,18 @@ export default function RecipesPage() {
           {selectedRecipe ? (
             <div className="space-y-4">
               <div className="border rounded-lg p-4">
-                <h3 className="text-xl font-semibold">{selectedRecipe.name}</h3>
-                <p className="text-muted-foreground mt-2">{selectedRecipe.description}</p>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold">{selectedRecipe.name}</h3>
+                    <p className="text-muted-foreground mt-2">{selectedRecipe.description}</p>
+                  </div>
+                  <ImageWithFallback
+                    src={getImageSrc('recipe', selectedRecipe.id)}
+                    alt={getImageAlt('recipe', selectedRecipe.id)}
+                    size="large"
+                    className="flex-shrink-0"
+                  />
+                </div>
                 
                 <div className="flex gap-4 mt-4 text-sm">
                   <span className="px-3 py-1 bg-secondary rounded">

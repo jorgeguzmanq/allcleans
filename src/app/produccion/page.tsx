@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, Suspense } from 'react'
 import { useStore, ProductionBatch, convertAmount } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { ImageWithFallback, getImageSrc, getImageAlt } from '@/components/ui/image-with-fallback'
 import { useSearchParams } from 'next/navigation'
 
 function ProductionContent() {
@@ -207,14 +208,22 @@ function ProductionContent() {
           {currentProduction ? (
             <div className="space-y-6">
               <div className="border rounded-lg p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
+                <div className="flex justify-between items-start gap-4 mb-4">
+                  <div className="flex-1">
                     <h3 className="text-xl font-semibold">{currentProduction.recipeName}</h3>
                     <p className="text-muted-foreground">
                       {currentProduction.targetAmount} {currentProduction.unit} • 
                       {new Date(currentProduction.createdAt).toLocaleString()}
                     </p>
                   </div>
+                  {selectedRecipeId && (
+                    <ImageWithFallback
+                      src={getImageSrc('recipe', selectedRecipeId)}
+                      alt={getImageAlt('recipe', selectedRecipeId)}
+                      size="medium"
+                      className="flex-shrink-0"
+                    />
+                  )}
                   {showSaved && (
                     <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                       ✓ Guardado
