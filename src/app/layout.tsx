@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import { CollectionBar } from "@/components/collection/collection-bar";
 
 const fontSans = Inter({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
                     Historial
                   </Link>
                 </nav>
+                <CollectionBar />
               </div>
             </div>
           </header>

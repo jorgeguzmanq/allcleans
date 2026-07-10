@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { useStore } from '@/lib/store'
 
 export type ImageSize = 'thumbnail' | 'small' | 'medium' | 'large'
 
@@ -75,8 +76,7 @@ export function ImageWithFallback({
 }
 
 export function getImageSrc(type: 'ingredient' | 'recipe', id: string): string | undefined {
-  const images = require('@/lib/data/images.json')
-  
+  const images = useStore.getState().images
   if (type === 'ingredient') {
     return images.ingredients[id]?.image
   }
@@ -84,8 +84,7 @@ export function getImageSrc(type: 'ingredient' | 'recipe', id: string): string |
 }
 
 export function getImageAlt(type: 'ingredient' | 'recipe', id: string): string {
-  const images = require('@/lib/data/images.json')
-  
+  const images = useStore.getState().images
   if (type === 'ingredient') {
     return images.ingredients[id]?.alt || id
   }
@@ -93,8 +92,7 @@ export function getImageAlt(type: 'ingredient' | 'recipe', id: string): string {
 }
 
 export function hasImage(type: 'ingredient' | 'recipe', id: string): boolean {
-  const images = require('@/lib/data/images.json')
-  
+  const images = useStore.getState().images
   if (type === 'ingredient') {
     return !!images.ingredients[id]?.image
   }

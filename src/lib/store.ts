@@ -2,9 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import ingredientsData from './data/ingredients.json'
-import recipesData from './data/recipes.json'
-import pricesData from './data/prices.json'
+import { useSyncExternalStore } from 'react'
 
 export interface Price {
   ingredient_id: string
@@ -112,6 +110,27 @@ export interface ProductionBatch {
   notes: string
 }
 
+export interface ImageEntry {
+  image?: string
+  alt?: string
+}
+
+export interface ImagesMap {
+  ingredients: Record<string, ImageEntry>
+  recipes: Record<string, ImageEntry>
+}
+
+// Shape of an exported/imported collection file (the protected data).
+export interface Collection {
+  metadata?: Record<string, unknown>
+  ingredients: Ingredient[]
+  recipes: Recipe[]
+  prices: Price[]
+  images?: Partial<ImagesMap>
+}
+
+const EMPTY_IMAGES: ImagesMap = { ingredients: {}, recipes: {} }
+
 // Helper to convert amount between units.
 // Cross-domain (g↔ml, g↔L, ml↔kg) assumes aqueous density ≈ 1 g/ml.
 export function convertAmount(amount: number, fromUnit: string, toUnit: string): number {
@@ -141,7 +160,14 @@ type Store = {
   productionCosts: Record<string, number>
   prices: Price[]
   selectedProviders: Record<string, string>
-  
+  images: ImagesMap
+  collectionName: string | null
+
+  hasCollection: () => boolean
+  loadCollection: (data: Collection, name?: string) => void
+  closeCollection: () => void
+  exportCollection: () => Collection
+
   getIngredient: (id: string) => Ingredient | undefined
   getRecipe: (id: string) => Recipe | undefined
   getIngredientsByCategory: (category: string) => Ingredient[]
@@ -170,12 +196,54 @@ type Store = {
 const useStore = create<Store>()(
   persist(
     (set, get) => ({
-      ingredients: ingredientsData.ingredients as Ingredient[],
-      recipes: recipesData.recipes as Recipe[],
+      ingredients: [],
+      recipes: [],
       productions: [],
       productionCosts: {},
-      prices: pricesData.prices as Price[],
+      prices: [],
       selectedProviders: {},
+      images: EMPTY_IMAGES,
+      collectionName: null,
+
+      hasCollection: () => {
+        const s = get()
+        return s.ingredients.length > 0 || s.recipes.length > 0
+      },
+
+      loadCollection: (data: Collection, name?: string) => {
+        set({
+          ingredients: data.ingredients ?? [],
+          recipes: data.recipes ?? [],
+          prices: data.prices ?? [],
+          images: {
+            ingredients: data.images?.ingredients ?? {},
+            recipes: data.images?.recipes ?? {},
+          },
+          collectionName: name ?? (data.metadata?.name as string) ?? 'Colección',
+        })
+      },
+
+      closeCollection: () => {
+        set({
+          ingredients: [],
+          recipes: [],
+          prices: [],
+          images: EMPTY_IMAGES,
+          collectionName: null,
+          selectedProviders: {},
+        })
+      },
+
+      exportCollection: () => {
+        const s = get()
+        return {
+          metadata: { name: s.collectionName ?? 'Colección', format_version: 1 },
+          ingredients: s.ingredients,
+          recipes: s.recipes,
+          prices: s.prices,
+          images: s.images,
+        }
+      },
 
       getIngredient: (id: string) => {
         return get().ingredients.find(i => i.id === id)
@@ -480,27 +548,45 @@ if (!hasPlaceholders) {
     }),
     {
       name: 'all-cleans-storage',
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         const s = (persistedState ?? {}) as Partial<Store>
         const base = {
           productions: s.productions ?? [],
-          productionCosts: s.productionCosts ?? {},
-          selectedProviders: s.selectedProviders ?? {}
-        }
-        if (version < 2) {
-          // v1 polluted productionCosts with provider price_per_unit values — clear them
-          return { ...base, productionCosts: {} }
+          productionCosts: version < 2 ? {} : (s.productionCosts ?? {}),
+          selectedProviders: s.selectedProviders ?? {},
+          // v3: the collection now lives in the opened file / localStorage, not in the repo
+          ingredients: s.ingredients ?? [],
+          recipes: s.recipes ?? [],
+          prices: s.prices ?? [],
+          images: s.images ?? EMPTY_IMAGES,
+          collectionName: s.collectionName ?? null,
         }
         return base
       },
       partialize: (state) => ({
         productions: state.productions,
         productionCosts: state.productionCosts,
-        selectedProviders: state.selectedProviders
+        selectedProviders: state.selectedProviders,
+        ingredients: state.ingredients,
+        recipes: state.recipes,
+        prices: state.prices,
+        images: state.images,
+        collectionName: state.collectionName,
       })
     }
   )
 )
 
 export { useStore }
+
+// True once zustand/persist has rehydrated from localStorage on the client.
+// Use to gate client-only UI and avoid hydration mismatches (replaces the
+// useEffect(() => setMounted(true)) pattern, which the lint config forbids).
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    (cb) => useStore.persist.onFinishHydration(cb),
+    () => useStore.persist.hasHydrated(),
+    () => false
+  )
+}

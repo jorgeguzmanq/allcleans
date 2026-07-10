@@ -43,3 +43,10 @@ next-env.d.ts
 # scripts
 /scripts/
 scripts/*.py
+
+# private data collection (never commit — this is the protected recipe data)
+/data-private/
+src/lib/data/ingredients.json
+src/lib/data/recipes.json
+src/lib/data/prices.json
+src/lib/data/images.json

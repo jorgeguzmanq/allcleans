@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "name": "Colección de ejemplo",
+    "format_version": 1,
+    "description": "Archivo de ejemplo. Ábrelo en la app con 'Abrir' para ver el formato, y construye tu propia colección."
+  },
+  "ingredients": [
+    {
+      "id": "ING001",
+      "name": "Agua destilada",
+      "alternative_names": ["Agua purificada"],
+      "category": "base",
+      "main_function": "Solvente base",
+      "functions": ["solvente"],
+      "characteristics": {
+        "physical_state": "líquido",
+        "ph": 7,
+        "notes": null
+      },
+      "safety": {
+        "risk_level": "bajo",
+        "required_ppe": []
+      },
+      "storage": "Ambiente, recipiente cerrado"
+    },
+    {
+      "id": "ING002",
+      "name": "Surfactante genérico",
+      "alternative_names": [],
+      "category": "surfactant",
+      "main_function": "Tensioactivo",
+      "functions": ["limpieza", "espuma"],
+      "characteristics": {
+        "physical_state": "líquido",
+        "ph": "6-8",
+        "notes": "Ejemplo de ingrediente"
+      },
+      "safety": {
+        "risk_level": "medio",
+        "required_ppe": ["guantes"]
+      },
+      "storage": "Ambiente"
+    }
+  ],
+  "recipes": [
+    {
+      "id": "REC001",
+      "name": "Limpiador multiusos (ejemplo)",
+      "description": "Receta de ejemplo para mostrar el formato. Reemplázala con las tuyas.",
+      "category": "multiusos",
+      "base_volume_ml": 1000,
+      "target_ph": { "min": 6, "max": 8 },
+      "rest_time_hours": null,
+      "requires_preservative": false,
+      "ingredients": [
+        {
+          "ingredient_id": "ING001",
+          "name": "Agua destilada",
+          "amount": 950,
+          "unit": "ml",
+          "order": 1,
+          "notes": null
+        },
+        {
+          "ingredient_id": "ING002",
+          "name": "Surfactante genérico",
+          "amount": 50,
+          "unit": "ml",
+          "order": 2,
+          "notes": null
+        }
+      ],
+      "procedure": [
+        {
+          "step": 1,
+          "description": "Verter {{ING001}} de agua en el recipiente.",
+          "time_min": 1,
+          "ingredients_involved": ["ING001"]
+        },
+        {
+          "step": 2,
+          "description": "Añadir {{ING002}} de surfactante y mezclar suavemente.",
+          "time_min": 5,
+          "ingredients_involved": ["ING002"]
+        }
+      ]
+    }
+  ],
+  "prices": [
+    {
+      "ingredient_id": "ING002",
+      "provider": "Proveedor ejemplo",
+      "product_name": "Surfactante genérico 1L",
+      "price": 10,
+      "quantity": 1,
+      "unit": "L",
+      "url_sale": "",
+      "url_product": "",
+      "delivery_time_days": 3,
+      "price_per_unit": 0.01
+    }
+  ],
+  "images": {
+    "ingredients": {},
+    "recipes": {}
+  }
+}

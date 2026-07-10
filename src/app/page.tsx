@@ -1,11 +1,13 @@
 'use client'
 
-import { useStore } from '@/lib/store'
+import { useStore, useHydrated } from '@/lib/store'
 import Link from 'next/link'
 
 export default function Home() {
   const { ingredients, recipes, productions } = useStore()
-  
+  const mounted = useHydrated()
+  const isEmpty = mounted && ingredients.length === 0 && recipes.length === 0
+
   const categories = [...new Set(ingredients.map(i => i.category))]
   const categoryLabels: Record<string, string> = {
     base: 'Base',
@@ -30,6 +32,21 @@ export default function Home() {
           Administra ingredientes, recetas y calcula producciones.
         </p>
       </section>
+
+      {isEmpty && (
+        <section className="rounded-lg border border-dashed bg-card p-6 text-center">
+          <h3 className="text-lg font-semibold mb-1">No hay ninguna colección abierta</h3>
+          <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+            Usa el botón <strong>Abrir</strong> (arriba a la derecha) para cargar tu archivo de colección
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">.json</code> con tus ingredientes y recetas.
+            ¿No tienes uno? Descarga el{' '}
+            <a href="/example-collection.json" download className="text-primary underline">
+              archivo de ejemplo
+            </a>{' '}
+            para ver el formato y empezar a construir el tuyo.
+          </p>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Link href="/ingredientes" className="p-6 rounded-lg border bg-card hover:bg-accent transition-colors">
